@@ -1,6 +1,7 @@
 package system
 
 import (
+	"encoding/binary"
 	"errors"
 	"io/ioutil"
 )
@@ -16,7 +17,7 @@ const (
 
 // System is the emulator
 type System struct {
-	// handles emulating the CPU and it's instructions
+	// Handles emulating the CPU and it's instructions
 	cpu *cpu
 
 	// Game data starts at 0x200. 0x00 - 0x1FF are reserved by the system.
@@ -26,7 +27,7 @@ type System struct {
 
 // NewSystem initializes a new Chip-8 emulator system and returns it
 func NewSystem(romFile string) (*System, error) {
-	sys := &System{cpu: &cpu{}}
+	sys := &System{cpu: &cpu{programCounter: programStartOffset}}
 
 	// place the rom into the system's memory
 	if err := sys.loadRom(romFile); err != nil {
@@ -34,6 +35,22 @@ func NewSystem(romFile string) (*System, error) {
 	}
 
 	return sys, nil
+}
+
+// Run starts the Chip-8 emulator
+func (s *System) Run() {
+	for {
+		// each instruction is 2 bytes
+		instruction := binary.BigEndian.Uint16(s.memory[s.cpu.programCounter : s.cpu.programCounter+2])
+		s.cpu.process(instruction)
+
+		// handle the program counter going past the memory size
+		// if s.cpu.programCounter+2 > memorySize-1 {
+		// 	fmt.Println("Program counter is greater than the system memory limit")
+		// 	fmt.Printf("Previous instruction %s at %d\n", string(instruction), s.cpu.programCounter)
+		// 	return
+		// }
+	}
 }
 
 // loadRom inserts the contents of the given ROM file into the system's memory
