@@ -22,7 +22,7 @@ func main() {
 	}
 	defer display.Stop()
 
-	sys, err := system.NewSystem("./roms/INVADERS", display)
+	sys, err := system.NewSystem("./community_roms/INVADERS")
 	if err != nil {
 		panic(err)
 	}
