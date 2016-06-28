@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	sys, err := system.NewSystem("./roms/INVADERS")
+	sys, err := system.NewSystem("./community_roms/INVADERS")
 	if err != nil {
 		fmt.Println(err)
 	}
