@@ -3,6 +3,7 @@ package system
 import (
 	"encoding/binary"
 	"errors"
+	"github.com/robmerrell/chippy/ui"
 	"io/ioutil"
 )
 
@@ -13,6 +14,12 @@ const (
 	// Game data starts at 0x200. The ROM should be dumped into memory starting at this location. This is also
 	// where the emulator should start executing instructions from.
 	programStartOffset = 0x200
+
+	// DisplayWidth is the width in pixels
+	DisplayWidth = 64
+
+	// DisplayHeight is the height in pixels
+	DisplayHeight = 32
 )
 
 // System is the emulator
@@ -23,15 +30,24 @@ type System struct {
 	// Game data starts at 0x200. 0x00 - 0x1FF are reserved by the system.
 	// the contents of the ROM will be dumped into here.
 	memory [memorySize]byte
+
+	// Display to draw on
+	display *ui.Display
 }
 
 // NewSystem initializes a new Chip-8 emulator system and returns it
-func NewSystem(romFile string) (*System, error) {
-	sys := &System{cpu: &cpu{programCounter: programStartOffset}}
+func NewSystem(romFile string, display *ui.Display) (*System, error) {
+	sys := &System{cpu: &cpu{programCounter: programStartOffset}, display: display}
 
 	// place the rom into the system's memory
 	if err := sys.loadRom(romFile); err != nil {
 		return sys, err
+	}
+
+	// initialize the screen. Not too worried about locality here, on a more intensive system I would be.
+	sys.cpu.screenState = make([][]byte, DisplayHeight)
+	for i := range sys.cpu.screenState {
+		sys.cpu.screenState[i] = make([]byte, DisplayWidth)
 	}
 
 	return sys, nil
@@ -43,13 +59,6 @@ func (s *System) Run() {
 		// each instruction is 2 bytes
 		instruction := binary.BigEndian.Uint16(s.memory[s.cpu.programCounter : s.cpu.programCounter+2])
 		s.cpu.process(instruction)
-
-		// handle the program counter going past the memory size
-		// if s.cpu.programCounter+2 > memorySize-1 {
-		// 	fmt.Println("Program counter is greater than the system memory limit")
-		// 	fmt.Printf("Previous instruction %s at %d\n", string(instruction), s.cpu.programCounter)
-		// 	return
-		// }
 	}
 }
 

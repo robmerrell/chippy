@@ -1,14 +1,30 @@
 package main
 
 import (
-	"fmt"
 	"github.com/robmerrell/chippy/system"
+	"github.com/robmerrell/chippy/ui"
+	"runtime"
 )
 
+// drawScale sets the scale size of the window
+const drawScale = 16
+
+func init() {
+	// This is needed to arrange that main() runs on main thread.
+	// See documentation for functions that are only allowed to be called from the main thread.
+	runtime.LockOSThread()
+}
+
 func main() {
-	sys, err := system.NewSystem("./roms/INVADERS")
+	display, err := ui.NewDisplay(system.DisplayWidth, system.DisplayHeight, drawScale)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
+	}
+	defer display.Stop()
+
+	sys, err := system.NewSystem("./roms/INVADERS", display)
+	if err != nil {
+		panic(err)
 	}
 
 	sys.Run()

@@ -20,6 +20,9 @@ type cpu struct {
 	stackPointer byte
 
 	// Timers
+
+	// Screen state of each pixel. Since there are no colors a pixel can either be on or off. Perhaps a bool would be better here...
+	screenState [][]byte
 }
 
 func (c *cpu) process(instruction uint16) {
@@ -56,6 +59,9 @@ func (c *cpu) process(instruction uint16) {
 	// store an address in the index register (0xANNN) - where NNN is the address
 	case 0xa000:
 		c.indexRegister = instruction & 0x0FFF
+
+	// (DXYN) draw a sprite at position X,Y with N bytes of sprite data
+	case 0xd000:
 
 	case 0xf000:
 		switch instruction & 0x00FF {
