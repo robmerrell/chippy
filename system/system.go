@@ -29,7 +29,7 @@ type System struct {
 
 	// Game data starts at 0x200. 0x00 - 0x1FF are reserved by the system.
 	// the contents of the ROM will be dumped into here.
-	memory [memorySize]byte
+	memory []byte
 
 	// Display to draw on
 	display *ui.Display
@@ -37,7 +37,7 @@ type System struct {
 
 // NewSystem initializes a new Chip-8 emulator system and returns it
 func NewSystem(romFile string, display *ui.Display) (*System, error) {
-	sys := &System{cpu: &cpu{programCounter: programStartOffset}, display: display}
+	sys := &System{cpu: &cpu{programCounter: programStartOffset}, memory: make([]byte, memorySize), display: display}
 
 	// place the rom into the system's memory
 	if err := sys.loadRom(romFile); err != nil {
@@ -58,7 +58,7 @@ func (s *System) Run() {
 	for {
 		// each instruction is 2 bytes
 		instruction := binary.BigEndian.Uint16(s.memory[s.cpu.programCounter : s.cpu.programCounter+2])
-		s.cpu.process(instruction)
+		s.cpu.process(instruction, s.memory)
 	}
 }
 

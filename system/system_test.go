@@ -6,7 +6,7 @@ import (
 )
 
 func TestLoadingRom(t *testing.T) {
-	s := &System{}
+	s := &System{memory: make([]byte, memorySize)}
 	s.loadRom("./testdata/inserting_rom")
 
 	contents := string(s.memory[programStartOffset : programStartOffset+5])
@@ -16,7 +16,7 @@ func TestLoadingRom(t *testing.T) {
 }
 
 func TestLoadingTooBigOfRom(t *testing.T) {
-	s := &System{}
+	s := &System{memory: make([]byte, memorySize)}
 	err := s.loadRom("./testdata/rom_too_large")
 
 	if err != nil && strings.Contains("too large", err.Error()) {

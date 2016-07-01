@@ -20,12 +20,14 @@ type cpu struct {
 	stackPointer byte
 
 	// Timers
+	// once set counts down each cycle until 0
+	delayTimer byte
 
 	// Screen state of each pixel. Since there are no colors a pixel can either be on or off. Perhaps a bool would be better here...
 	screenState [][]byte
 }
 
-func (c *cpu) process(instruction uint16) {
+func (c *cpu) process(instruction uint16, memory []byte) {
 	fmt.Printf("Instruction 0x%4x at %d\n", instruction, c.programCounter)
 
 	// instruction handling. these are in alphabetical order to keep things easy to find.
@@ -72,6 +74,16 @@ func (c *cpu) process(instruction uint16) {
 		case 0x001e:
 			register := (instruction & 0x0F00) >> 8
 			c.indexRegister += uint16(c.registers[register])
+
+		// (0xFX07) - Set register X to the value in the display timer
+		case 0x0007:
+			register := (instruction & 0x0F00) >> 8
+			c.registers[register] = c.delayTimer
+
+		// (0xFX15) - Set the delay timer to the value of register X
+		case 0x0015:
+			register := (instruction & 0x0F00) >> 8
+			c.delayTimer = c.registers[register]
 
 		default:
 			fmt.Println("Instruction not implemented")
