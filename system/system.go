@@ -22,12 +22,13 @@ type System struct {
 
 	// Game data starts at 0x200. 0x00 - 0x1FF are reserved by the system.
 	// the contents of the ROM will be dumped into here.
-	memory [memorySize]byte
+	memory []byte
+	// memory [memorySize]byte
 }
 
 // NewSystem initializes a new Chip-8 emulator system and returns it
 func NewSystem(romFile string) (*System, error) {
-	sys := &System{cpu: &cpu{programCounter: programStartOffset}}
+	sys := &System{cpu: &cpu{programCounter: programStartOffset}, memory: make([]byte, memorySize)}
 
 	// place the rom into the system's memory
 	if err := sys.loadRom(romFile); err != nil {
@@ -42,7 +43,7 @@ func (s *System) Run() {
 	for {
 		// each instruction is 2 bytes
 		instruction := binary.BigEndian.Uint16(s.memory[s.cpu.programCounter : s.cpu.programCounter+2])
-		s.cpu.process(instruction)
+		s.cpu.process(instruction, s.memory)
 
 		// handle the program counter going past the memory size
 		// if s.cpu.programCounter+2 > memorySize-1 {

@@ -9,7 +9,7 @@ import (
 // jump 0x1NNN
 func TestInstJump(t *testing.T) {
 	c := &cpu{programCounter: programStartOffset}
-	c.process(0x1225)
+	c.process(0x1225, []byte{})
 
 	if c.programCounter != 549 {
 		t.Error("Expected program counter to 549, but is", c.programCounter)
@@ -19,7 +19,7 @@ func TestInstJump(t *testing.T) {
 // store NN in register X - 0x6XNN
 func TestInstStoreValueInRegister(t *testing.T) {
 	c := &cpu{programCounter: programStartOffset}
-	c.process(0x6a08)
+	c.process(0x6a08, []byte{})
 
 	if c.registers[10] != 8 {
 		t.Error("Expected register 10 to be 8, but is", c.registers[10])
@@ -29,7 +29,7 @@ func TestInstStoreValueInRegister(t *testing.T) {
 // store NNN in the index register - 0xANNN
 func TestInstStoreIndexRegister(t *testing.T) {
 	c := &cpu{programCounter: programStartOffset}
-	c.process(0xa3d3)
+	c.process(0xa3d3, []byte{})
 
 	if c.indexRegister != 979 {
 		t.Error("Expected index register to be 979, but is", c.indexRegister)
@@ -40,7 +40,7 @@ func TestInstStoreIndexRegister(t *testing.T) {
 func TestInstAddToRegister(t *testing.T) {
 	c := &cpu{programCounter: programStartOffset}
 	c.registers[1] = byte(3)
-	c.process(0x7104)
+	c.process(0x7104, []byte{})
 
 	if c.registers[1] != 7 {
 		t.Error("Expected register 1 to be 7, but is", c.registers[1])
@@ -51,7 +51,7 @@ func TestInstAddToRegister(t *testing.T) {
 func TestInstAddToRegisterWithWrapping(t *testing.T) {
 	c := &cpu{programCounter: programStartOffset}
 	c.registers[1] = byte(254)
-	c.process(0x7104)
+	c.process(0x7104, []byte{})
 
 	if c.registers[1] != 2 {
 		t.Error("Expected register 1 to be 2, but is", c.registers[1])
@@ -62,7 +62,7 @@ func TestInstAddToRegisterWithWrapping(t *testing.T) {
 func TestInstAddRegisterToIndexRegister(t *testing.T) {
 	c := &cpu{programCounter: programStartOffset, indexRegister: 100}
 	c.registers[0] = byte(12)
-	c.process(0xf01e)
+	c.process(0xf01e, []byte{})
 
 	if c.indexRegister != 112 {
 		t.Error("Expected index register to be 112, but is", c.indexRegister)
@@ -74,14 +74,14 @@ func TestInstSkipNextIfRegisterEqualsValue(t *testing.T) {
 	c := &cpu{programCounter: programStartOffset}
 
 	c.registers[0] = byte(12)
-	c.process(0x300c)
+	c.process(0x300c, []byte{})
 	if c.programCounter != programStartOffset+4 {
 		t.Error("Expected the program counter to advance 4 bytes, but advanced", c.programCounter-programStartOffset)
 	}
 
 	c.programCounter = programStartOffset
 	c.registers[0] = byte(12)
-	c.process(0x3007)
+	c.process(0x3007, []byte{})
 	if c.programCounter != programStartOffset+2 {
 		t.Error("Expected the program counter to advance 2 bytes, but advanced", c.programCounter-programStartOffset)
 	}
@@ -92,7 +92,7 @@ func TestSetDelayTimer(t *testing.T) {
 	c := &cpu{programCounter: programStartOffset}
 
 	c.registers[3] = 0xfe
-	c.process(0xf315)
+	c.process(0xf315, []byte{})
 
 	if c.delayTimer != 0xfe {
 		t.Error("Expected the delay timer to be 0xfe, but was", c.delayTimer)
@@ -104,7 +104,7 @@ func TestSetRegisterFromDelayTimer(t *testing.T) {
 	c := &cpu{programCounter: programStartOffset}
 
 	c.delayTimer = 0xb3
-	c.process(0xf207)
+	c.process(0xf207, []byte{})
 
 	if c.registers[2] != 0xb3 {
 		t.Error("Expected the register to be 0xb3, but was", c.registers[2])

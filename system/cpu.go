@@ -24,7 +24,7 @@ type cpu struct {
 	delayTimer byte
 }
 
-func (c *cpu) process(instruction uint16) {
+func (c *cpu) process(instruction uint16, memory []byte) {
 	fmt.Printf("Instruction 0x%4x at %d\n", instruction, c.programCounter)
 
 	// instruction handling. these are in alphabetical order to keep things easy to find.
