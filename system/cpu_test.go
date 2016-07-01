@@ -86,3 +86,27 @@ func TestInstSkipNextIfRegisterEqualsValue(t *testing.T) {
 		t.Error("Expected the program counter to advance 2 bytes, but advanced", c.programCounter-programStartOffset)
 	}
 }
+
+// set the delay timer to the value of a register - 0xFX15
+func TestSetDelayTimer(t *testing.T) {
+	c := &cpu{programCounter: programStartOffset}
+
+	c.registers[3] = 0xfe
+	c.process(0xf315)
+
+	if c.delayTimer != 0xfe {
+		t.Error("Expected the delay timer to be 0xfe, but was", c.delayTimer)
+	}
+}
+
+// set a register to the value of the delay timer - 0xFX07
+func TestSetRegisterFromDelayTimer(t *testing.T) {
+	c := &cpu{programCounter: programStartOffset}
+
+	c.delayTimer = 0xb3
+	c.process(0xf207)
+
+	if c.registers[2] != 0xb3 {
+		t.Error("Expected the register to be 0xb3, but was", c.registers[2])
+	}
+}
