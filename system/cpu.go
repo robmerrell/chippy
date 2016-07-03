@@ -37,7 +37,7 @@ func (c *cpu) process(instruction uint16, memory []byte) {
 	// instruction handling. these are in alphabetical order to keep things easy to find.
 	switch instruction & 0xF000 {
 
-	// jump (0x1NNN) - Jump to address NNN
+	// (0x1NNN) Jump to address NNN
 	case 0x1000:
 		c.programCounter = instruction & 0x0FFF
 		return // return early so the PC isn't advanced
@@ -50,31 +50,31 @@ func (c *cpu) process(instruction uint16, memory []byte) {
 			c.advancePC()
 		}
 
-	// store a value in a register (0x6XNN) - where X is the register and NN is the value
+	// (0x6XNN) store the value NN in register X
 	case 0x6000:
 		register := (instruction & 0x0F00) >> 8
 		value := instruction & 0x00FF
 		c.registers[register] = byte(value)
 
-	// add a value to a register (0x7XNN) - where X is the register and NN is the value
+	// (0x7XNN) add the value NN to register X
 	case 0x7000:
 		register := (instruction & 0x0F00) >> 8
 		value := instruction & 0x00FF
 		c.registers[register] += byte(value)
 
-	// store an address in the index register (0xANNN) - where NNN is the address
-	case 0xa000:
+	// (0xANNN) store the address NNN in the index register
+	case 0xA000:
 		c.indexRegister = instruction & 0x0FFF
 
-	// (DXYN) draw a sprite at position in registers X,Y with N bytes of sprite data
-	case 0xd000:
+	// (DXYN) draw a sprite at the position in registers X,Y with N bytes of sprite data
+	case 0xD000:
 		height := instruction & 0x000F
 		regX := (instruction & 0x0F00) >> 8
 		regY := (instruction & 0x00F0) >> 4
 		x := c.registers[regX]
 		y := c.registers[regY]
 
-		c.registers[15] = 0 // hit detection flag
+		c.registers[0xF] = 0 // hit detection flag
 		for row := uint16(0); row < height; row++ {
 			spriteData := memory[c.indexRegister+row]
 
@@ -89,7 +89,7 @@ func (c *cpu) process(instruction uint16, memory []byte) {
 
 					// if the pixel was already one, set the last register to 1 to show that a collision happened
 					if c.screenState[yIndex][xIndex] == 1 {
-						c.registers[15] = 1
+						c.registers[0xF] = 1
 					}
 
 					c.screenState[yIndex][xIndex] ^= 1
@@ -99,22 +99,22 @@ func (c *cpu) process(instruction uint16, memory []byte) {
 
 		c.drawFlag = true
 
-	case 0xf000:
+	case 0xF000:
 		switch instruction & 0x00FF {
 
-		// Add a value to the index register from a register (0xFX1E) - where X is the register
+		// (0xFX1E) Add the value from register X to the index register
 		// TODO: Wikipedia has a note about an undocumented feature that the carry flag should be set when overflowing
 		// not sure if it is for chip-8 or just super chip-8
-		case 0x001e:
+		case 0x001E:
 			register := (instruction & 0x0F00) >> 8
 			c.indexRegister += uint16(c.registers[register])
 
-		// (0xFX07) - Set register X to the value in the display timer
+		// (0xFX07) Set register X to the value in the display timer
 		case 0x0007:
 			register := (instruction & 0x0F00) >> 8
 			c.registers[register] = c.delayTimer
 
-		// (0xFX15) - Set the delay timer to the value of register X
+		// (0xFX15) Set the delay timer to the value of register X
 		case 0x0015:
 			register := (instruction & 0x0F00) >> 8
 			c.delayTimer = c.registers[register]
