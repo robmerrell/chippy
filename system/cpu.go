@@ -74,6 +74,7 @@ func (c *cpu) process(instruction uint16, memory []byte) {
 		x := c.registers[regX]
 		y := c.registers[regY]
 
+		c.registers[15] = 0 // hit detection flag
 		for row := uint16(0); row < height; row++ {
 			spriteData := memory[c.indexRegister+row]
 
@@ -82,7 +83,17 @@ func (c *cpu) process(instruction uint16, memory []byte) {
 				// if we were parsing 0x3C The screenstate for that section of the sprite will be 00111100
 				inv := 7 - col // without reading the inverse (just col) we get our bits backwards. This fixes that.
 				pixel := spriteData & (1 << inv) >> inv
-				c.screenState[row+uint16(y)][col+uint16(x)] = pixel
+				if pixel == 1 {
+					xIndex := col + uint16(x)
+					yIndex := row + uint16(y)
+
+					// if the pixel was already one, set the last register to 1 to show that a collision happened
+					if c.screenState[yIndex][xIndex] == 1 {
+						c.registers[15] = 1
+					}
+
+					c.screenState[yIndex][xIndex] ^= 1
+				}
 			}
 		}
 
