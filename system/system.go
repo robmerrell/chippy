@@ -67,6 +67,11 @@ func (s *System) Run() {
 			s.cpu.drawFlag = false
 		}
 
+		// update the timers
+		if s.cpu.delayTimer > 0 {
+			s.cpu.delayTimer--
+		}
+
 		glfw.PollEvents()
 	}
 }
