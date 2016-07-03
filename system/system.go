@@ -3,6 +3,7 @@ package system
 import (
 	"encoding/binary"
 	"errors"
+	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/robmerrell/chippy/ui"
 	"io/ioutil"
 )
@@ -59,6 +60,14 @@ func (s *System) Run() {
 		// each instruction is 2 bytes
 		instruction := binary.BigEndian.Uint16(s.memory[s.cpu.programCounter : s.cpu.programCounter+2])
 		s.cpu.process(instruction, s.memory)
+
+		// draw if required
+		if s.cpu.drawFlag {
+			s.display.Draw(s.cpu.screenState)
+			s.cpu.drawFlag = false
+		}
+
+		glfw.PollEvents()
 	}
 }
 

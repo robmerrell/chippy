@@ -25,6 +25,10 @@ type cpu struct {
 
 	// Screen state of each pixel. Since there are no colors a pixel can either be on or off. Perhaps a bool would be better here...
 	screenState [][]byte
+
+	// We only need to draw after specific registers are processed. The system will read this draw flag, draw to the screen
+	// and then set it to false after it has drawn.
+	drawFlag bool
 }
 
 func (c *cpu) process(instruction uint16, memory []byte) {
@@ -62,8 +66,27 @@ func (c *cpu) process(instruction uint16, memory []byte) {
 	case 0xa000:
 		c.indexRegister = instruction & 0x0FFF
 
-	// (DXYN) draw a sprite at position X,Y with N bytes of sprite data
+	// (DXYN) draw a sprite at position in registers X,Y with N bytes of sprite data
 	case 0xd000:
+		height := instruction & 0x000F
+		regX := (instruction & 0x0F00) >> 8
+		regY := (instruction & 0x00F0) >> 4
+		x := c.registers[regX]
+		y := c.registers[regY]
+
+		for row := uint16(0); row < height; row++ {
+			spriteData := memory[c.indexRegister+row]
+
+			for col := uint16(0); col < 8; col++ {
+				// expand out the sprite and place the pixel, which will be a 0 or a 1 in the screenstate.
+				// if we were parsing 0x3C The screenstate for that section of the sprite will be 00111100
+				inv := 7 - col // without reading the inverse (just col) we get our bits backwards. This fixes that.
+				pixel := spriteData & (1 << inv) >> inv
+				c.screenState[row+uint16(y)][col+uint16(x)] = pixel
+			}
+		}
+
+		c.drawFlag = true
 
 	case 0xf000:
 		switch instruction & 0x00FF {

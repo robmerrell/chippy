@@ -19,10 +19,10 @@ drawbl       LOADI   leftpixel
 drawbr       LOADI   rightpixel
              DRAW    r3,r4,$1
 loop         JUMP    loop
-smiley       FCB     $66
-             FCB     $66
-             FCB     $18
-             FCB     $C3
-             FCB     $3C
+smiley       FCB     $66 ;; .**..**.
+             FCB     $66 ;; .**..**.
+             FCB     $18 ;; ...**...
+             FCB     $C3 ;; **....**
+             FCB     $3C ;; ..****..
 leftpixel    FCB     $80
 rightpixel   FCB     $1

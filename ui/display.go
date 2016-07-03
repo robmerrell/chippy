@@ -50,23 +50,18 @@ func (d *Display) Stop() {
 	glfw.Terminate()
 }
 
-/*
-func (d *Display) Draw() {
+// Draw draws the screenstate to the screen
+func (d *Display) Draw(screenState [][]byte) {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
-
 	gl.Color3f(1, 1, 1)
-	x := 0.0
-	y := 0.0
-	size := 1.0
-	gl.Rectd(x, y, x+size, y+size)
+
+	for y := range screenState {
+		for x := range screenState[y] {
+			if screenState[y][x] == 1 {
+				gl.Recti(int32(x), int32(y), int32(x+1), int32(y+1))
+			}
+		}
+	}
 
 	d.window.SwapBuffers()
 }
-
-func (d *Display) Loop() {
-	for !d.window.ShouldClose() {
-		d.Draw()
-		glfw.PollEvents()
-	}
-}
-*/
