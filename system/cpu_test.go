@@ -110,3 +110,36 @@ func TestSetRegisterFromDelayTimer(t *testing.T) {
 		t.Error("Expected the register to be 0xb3, but was", c.registers[2])
 	}
 }
+
+func TestDrawInstructionXorPixels(t *testing.T) {
+	c := &cpu{programCounter: programStartOffset}
+	c.screenState = make([][]byte, DisplayHeight)
+	for i := range c.screenState {
+		c.screenState[i] = make([]byte, DisplayWidth)
+	}
+
+	// set up the memory
+	mem := make([]byte, memorySize)
+	mem[0x204] = 0x80 // pixel
+
+	c.registers[0] = 10
+	c.registers[1] = 10
+	c.indexRegister = 0x204
+
+	// draw twice to make sure the hit flag is set and the sprite is removed
+	c.process(0xd011, mem)
+	if c.screenState[10][10] != 1 {
+		t.Error("Expected the pixel to be set, but it was not")
+	}
+	if c.registers[15] != 0 {
+		t.Error("Expected the last register to be 0, but it was not")
+	}
+
+	c.process(0xd011, mem)
+	if c.screenState[10][10] != 0 {
+		t.Error("Expected the pixel to be unset, but it was set")
+	}
+	if c.registers[15] != 1 {
+		t.Error("Expected the last register to be 1, but it was not")
+	}
+}
