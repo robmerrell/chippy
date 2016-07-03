@@ -143,3 +143,34 @@ func TestDrawInstructionXorPixels(t *testing.T) {
 		t.Error("Expected the last register to be 1, but it was not")
 	}
 }
+
+// call and return from a subroutine - 0x2NNN and 0x00EE
+func TestCallingAndReturningFromSubRoutine(t *testing.T) {
+	c := &cpu{programCounter: programStartOffset}
+
+	// call the subroutine
+	c.process(0x2248, []byte{})
+
+	if c.programCounter != 0x248 {
+		t.Error("Expected the subroutine at 0x248 to be called, but program counter was", c.programCounter)
+	}
+
+	if c.stackPointer != 1 {
+		t.Error("Stack pointer was not incremented")
+	}
+
+	if c.stack[0] != 0x202 {
+		t.Error("Caller address (caller + 2 bytes) was not pushed onto the call stack, stack value was", c.stack[0])
+	}
+
+	// return from the subroutine
+	c.process(0x00EE, []byte{})
+
+	if c.programCounter != 0x202 {
+		t.Error("Expected program counter to be 0x202, but was", c.programCounter)
+	}
+
+	if c.stackPointer != 0 {
+		t.Error("Expected the stack pointer to be decremented")
+	}
+}

@@ -36,11 +36,32 @@ func (c *cpu) process(instruction uint16, memory []byte) {
 
 	// instruction handling. these are in alphabetical order to keep things easy to find.
 	switch instruction & 0xF000 {
+	case 0x0000:
+		switch instruction & 0x00FF {
+
+		// (0x00EE) return from the subroutine
+		case 0x00EE:
+			c.programCounter = c.stack[c.stackPointer-1]
+			c.stackPointer--
+			return
+
+		// 0x0NNN is not implemented because it was used to execute machine code on the
+		// the COSMAC VIP machine. Most modern emulators do not implement it.
+		default:
+			fmt.Println("Instruction not implemented")
+		}
 
 	// (0x1NNN) Jump to address NNN
 	case 0x1000:
 		c.programCounter = instruction & 0x0FFF
-		return // return early so the PC isn't advanced
+		return
+
+	// (0x2NNN) Execute the subroutine starting at address NNN
+	case 0x2000:
+		c.stack[c.stackPointer] = c.programCounter + 2
+		c.programCounter = instruction & 0x0FFF
+		c.stackPointer++
+		return
 
 	// (3XNN) skip the following instruction if register X equals NN
 	case 0x3000:
