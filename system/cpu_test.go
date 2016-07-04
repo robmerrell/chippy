@@ -144,6 +144,31 @@ func TestDrawInstructionXorPixels(t *testing.T) {
 	}
 }
 
+// clear the screen 0x00E0
+func TestClearScreen(t *testing.T) {
+	c := &cpu{programCounter: programStartOffset}
+	c.screenState = make([][]byte, DisplayHeight)
+	for i := range c.screenState {
+		c.screenState[i] = make([]byte, DisplayWidth)
+	}
+	c.screenState[10][10] = 1
+
+	c.process(0x00E0, []byte{})
+
+	pixelOn := false
+	for y := range c.screenState {
+		for x := range c.screenState[y] {
+			if c.screenState[y][x] == 1 {
+				pixelOn = true
+			}
+		}
+	}
+
+	if pixelOn {
+		t.Error("Expected the screen to be cleared, but there were pixels turned on")
+	}
+}
+
 // call and return from a subroutine - 0x2NNN and 0x00EE
 func TestCallingAndReturningFromSubRoutine(t *testing.T) {
 	c := &cpu{programCounter: programStartOffset}

@@ -39,6 +39,15 @@ func (c *cpu) process(instruction uint16, memory []byte) {
 	case 0x0000:
 		switch instruction & 0x00FF {
 
+		// (0x00E0) clear the screen
+		case 0x00E0:
+			for y := range c.screenState {
+				for x := range c.screenState[y] {
+					c.screenState[y][x] = 0
+				}
+			}
+			c.drawFlag = true
+
 		// (0x00EE) return from the subroutine
 		case 0x00EE:
 			c.programCounter = c.stack[c.stackPointer-1]
