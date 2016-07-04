@@ -83,6 +83,29 @@ func (c *cpu) process(instruction uint16, memory []byte) {
 		value := instruction & 0x00FF
 		c.registers[register] += byte(value)
 
+	case 0x8000:
+		x := (instruction & 0x0F00) >> 8
+		y := (instruction & 0x00F0) >> 4
+
+		switch instruction & 0x000F {
+
+		// (0x8XY0) Set register X to value of register Y
+		case 0x0000:
+			c.registers[x] = c.registers[y]
+
+		// (0x8XY1) Set register X to the value of X | Y
+		case 0x0001:
+			c.registers[x] = c.registers[x] | c.registers[y]
+
+		// (0x8XY2) Set register X to the value of X & Y
+		case 0x0002:
+			c.registers[x] = c.registers[x] & c.registers[y]
+
+		// (0x8XY3) Set register X to the value of X ^ Y
+		case 0x0003:
+			c.registers[x] = c.registers[x] ^ c.registers[y]
+		}
+
 	// (0xANNN) store the address NNN in the index register
 	case 0xA000:
 		c.indexRegister = instruction & 0x0FFF

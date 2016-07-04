@@ -174,3 +174,46 @@ func TestCallingAndReturningFromSubRoutine(t *testing.T) {
 		t.Error("Expected the stack pointer to be decremented")
 	}
 }
+
+// set register x to register y value (0x8XY0)
+func TestSettingRegisterXfromRegisterY(t *testing.T) {
+	c := &cpu{programCounter: programStartOffset}
+	c.registers[1] = 0x32
+
+	c.process(0x8010, []byte{})
+
+	if c.registers[0] != c.registers[1] {
+		t.Errorf("Expected registers 0 and 1 to be the same, but 0 was %d and 1 was %d", c.registers[0], c.registers[1])
+	}
+}
+
+// Test all 3 register bitwise operators (0x8XY1, 0x8XY2, 0x8XY3)
+func TestRegisterBitwiseOperators(t *testing.T) {
+	cleanCPU := func() *cpu {
+		c := &cpu{programCounter: programStartOffset}
+		c.registers[0] = 0x4
+		c.registers[1] = 0x5
+		return c
+	}
+
+	// |
+	c := cleanCPU()
+	c.process(0x8011, []byte{})
+	if c.registers[0] != 0x5 {
+		t.Error("Expected register 0 to be 0x5, but was", c.registers[0])
+	}
+
+	// &
+	c = cleanCPU()
+	c.process(0x8012, []byte{})
+	if c.registers[0] != 0x4 {
+		t.Error("Expected register 0 to be 0x4, but was", c.registers[0])
+	}
+
+	// ^
+	c = cleanCPU()
+	c.process(0x8013, []byte{})
+	if c.registers[0] != 0x1 {
+		t.Error("Expected register 0 to be 0x1, but was", c.registers[0])
+	}
+}
